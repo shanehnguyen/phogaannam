@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Anton, Inter, Caveat } from "next/font/google";
+import { Playfair_Display, Be_Vietnam_Pro, Caveat } from "next/font/google";
 import "./globals.css";
 
-const anton = Anton({
-  variable: "--font-anton",
-  subsets: ["latin"],
-  weight: "400",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin", "vietnamese"],
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+const beVietnam = Be_Vietnam_Pro({
+  variable: "--font-bevn",
+  subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -22,8 +22,9 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "Pho Ga An Nam",
-  description: "Authentic Vietnamese pho, slow-simmered and made with a family recipe since 1987.",
+  title: "Phở Gà An Nam — Authentic Vietnamese Cuisine",
+  description:
+    "A family-run Vietnamese kitchen specializing in phở gà — chicken pho slow-simmered overnight from a recipe passed down three generations.",
 };
 
 export default function RootLayout({
@@ -32,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${anton.variable} ${inter.variable} ${caveat.variable}`}>
+    <html
+      lang="en"
+      className={`${playfair.variable} ${beVietnam.variable} ${caveat.variable}`}
+    >
       <body>{children}</body>
     </html>
   );
