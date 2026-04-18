@@ -42,3 +42,6 @@ next-env.d.ts
 
 # claude local
 .claude/
+
+# design reference (not part of repo)
+/inspo/
