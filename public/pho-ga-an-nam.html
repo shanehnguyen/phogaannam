@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phở Gà An Nam — Brand Film</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Caveat:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #0a0a0a; color: #f3e7cf; font-family: 'Be Vietnam Pro', system-ui, sans-serif; height: 100%; overflow: hidden; }
+  #root { position: fixed; inset: 0; }
+
+  /* Tweaks panel */
+  .tweaks-panel {
+    position: fixed; right: 18px; top: 18px;
+    z-index: 9999;
+    background: rgba(10, 14, 12, 0.92);
+    color: #f3e7cf;
+    border: 1px solid rgba(217,173,95,0.3);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+    font-size: 13px;
+    min-width: 240px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+  .tweaks-panel h3 {
+    margin: 0 0 10px 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px; font-weight: 500;
+    color: #d9ad5f; letter-spacing: -0.01em;
+  }
+  .tweaks-panel .label {
+    font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: rgba(243,231,207,0.55); margin-bottom: 8px;
+  }
+  .tweaks-panel .seg {
+    display: flex; border: 1px solid rgba(217,173,95,0.25); border-radius: 6px; overflow: hidden;
+  }
+  .tweaks-panel .seg button {
+    flex: 1; background: transparent; color: rgba(243,231,207,0.75);
+    border: 0; padding: 8px 10px;
+    font-family: inherit; font-size: 12px; cursor: pointer;
+    transition: background 120ms, color 120ms;
+    font-weight: 500;
+  }
+  .tweaks-panel .seg button.on {
+    background: #c89033; color: #0b1710; font-weight: 700;
+  }
+  .tweaks-panel .seg button:not(.on):hover { background: rgba(217,173,95,0.1); color: #d9ad5f; }
+  .tweaks-panel .hint {
+    margin-top: 10px; font-size: 11px; color: rgba(243,231,207,0.4);
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="animations.jsx"></script>
+<script type="text/babel" src="scenes-bep-nha.jsx"></script>
+<script type="text/babel" src="scenes-ba-the-he.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "direction": "bth"
+  }/*EDITMODE-END*/;
+
+  function App() {
+    const [direction, setDirection] = React.useState(() => {
+      try { return localStorage.getItem('pgan:dir') || TWEAK_DEFAULTS.direction; } catch { return TWEAK_DEFAULTS.direction; }
+    });
+    const [tweaksOpen, setTweaksOpen] = React.useState(false);
+
+    // Persist direction change → localStorage + host file
+    const pickDirection = (d) => {
+      setDirection(d);
+      try { localStorage.setItem('pgan:dir', d); } catch {}
+      try {
+        window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { direction: d } }, '*');
+      } catch {}
+    };
+
+    // Tweaks wiring
+    React.useEffect(() => {
+      const onMsg = (e) => {
+        const d = e.data || {};
+        if (d.type === '__activate_edit_mode') setTweaksOpen(true);
+        if (d.type === '__deactivate_edit_mode') setTweaksOpen(false);
+      };
+      window.addEventListener('message', onMsg);
+      try { window.parent.postMessage({ type: '__edit_mode_available' }, '*'); } catch {}
+      return () => window.removeEventListener('message', onMsg);
+    }, []);
+
+    const Scenes = direction === 'bth' ? window.BaTheHeDirection : window.BepNhaDirection;
+    const bg = direction === 'bth' ? '#0b1710' : '#f3e7cf';
+
+    return (
+      <>
+        <window.Stage
+          key={direction /* remount to reset timeline cleanly */}
+          width={1920} height={1080} duration={28}
+          background={bg}
+          persistKey={`pgan:stage:${direction}`}
+        >
+          <Scenes />
+        </window.Stage>
+
+        {tweaksOpen && (
+          <div className="tweaks-panel">
+            <h3>Tweaks</h3>
+            <div className="label">Direction</div>
+            <div className="seg">
+              <button className={direction === 'bep' ? 'on' : ''} onClick={() => pickDirection('bep')}>
+                Bếp Nhà
+              </button>
+              <button className={direction === 'bth' ? 'on' : ''} onClick={() => pickDirection('bth')}>
+                Ba Thế Hệ
+              </button>
+            </div>
+            <div className="hint">space · play/pause &nbsp; ← → · seek &nbsp; 0 · reset</div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
+</body>
+</html>
